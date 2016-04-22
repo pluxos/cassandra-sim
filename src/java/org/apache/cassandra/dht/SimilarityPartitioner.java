@@ -211,6 +211,21 @@ public class SimilarityPartitioner implements IPartitioner
             return new BinaryReflectedGrayCode().compare(this.token, o.token);
         }
 
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null || this.getClass() != obj.getClass())
+                return false;
+
+            return token.equals(((BinaryToken)obj).token);
+        }
+
+        public int hashCode()
+        {
+            return token != null ? token.hashCode() : 0;
+        }
+
         @Override
         public IPartitioner getPartitioner()
         {
