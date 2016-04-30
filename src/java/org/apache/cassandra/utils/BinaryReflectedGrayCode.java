@@ -25,21 +25,8 @@ public class BinaryReflectedGrayCode implements Comparator<BitSet>
 {
     public int compare(BitSet gray1, BitSet gray2)
     {
-        long l1 = convert(BinaryReflectedGrayCodeUtil.grayToBinary(gray1));
-        long l2 = convert(BinaryReflectedGrayCodeUtil.grayToBinary(gray2));
-
-        if (l1 < l2)
-        {
-            return -1;
-        }
-        else if (l1 == l2)
-        {
-            return 0;
-        }
-        else
-        {
-            return 1;
-        }
+        return Long.compare(convert(BinaryReflectedGrayCodeUtil.grayToBinary(gray1)),
+                            convert(BinaryReflectedGrayCodeUtil.grayToBinary(gray2)));
     }
 
     private static long convert(BitSet bits)
@@ -52,7 +39,7 @@ public class BinaryReflectedGrayCode implements Comparator<BitSet>
         return value;
     }
 
-    /*private static BitSet convert(long value)
+    private  static BitSet convert(long value)
     {
         BitSet bits = new BitSet();
         int index = 0;
@@ -66,5 +53,5 @@ public class BinaryReflectedGrayCode implements Comparator<BitSet>
             value = value >>> 1;
         }
         return bits;
-    }*/
+    }
 }

@@ -21,10 +21,13 @@ package org.apache.cassandra.dht;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.Schema;
@@ -35,12 +38,16 @@ import org.apache.cassandra.db.marshal.BinaryType;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.serializers.BinarySerializer;
 import org.apache.cassandra.service.StorageService;
+import org.apache.cassandra.utils.BiMultiValMap;
 import org.apache.cassandra.utils.BinaryReflectedGrayCode;
+import org.apache.cassandra.utils.BinaryReflectedGrayCodeUtil;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.cassandra.utils.FBUtilities;
 import org.apache.cassandra.utils.ObjectSizes;
 import org.apache.cassandra.utils.Pair;
 import org.apache.cassandra.utils.RandomHyperplaneHash;
+import org.apache.cassandra.utils.SortedBiMultiValMap;
+import org.hsqldb.types.Binary;
 
 public class SimilarityPartitioner implements IPartitioner
 {
@@ -207,8 +214,8 @@ public class SimilarityPartitioner implements IPartitioner
 
         public int compareTo(Token token)
         {
-            BinaryToken o = (BinaryToken) token;
-            return new BinaryReflectedGrayCode().compare(this.token, o.token);
+            return new BinaryReflectedGrayCode()
+                   .compare(this.token, (BitSet) token.getTokenValue());
         }
 
         public boolean equals(Object obj)
