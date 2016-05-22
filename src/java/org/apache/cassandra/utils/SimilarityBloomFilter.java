@@ -18,19 +18,27 @@
 
 package org.apache.cassandra.utils;
 
+import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.utils.concurrent.WrappedSharedCloseable;
 import org.apache.cassandra.utils.obs.IBitSet;
 
 public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFilter
 {
-    public final IBitSet bitset;
-    public final int hashCount;
+    public static final int W = 4;
+    public final int dimention = 6;
+
+    public final IBitSet bitset; // a (size of bitset == asize)
+    public final int hashCount; // nfuncs
+    public final double[][] paramA; // para_a
+    public final double[] paramB; // para_b
 
     SimilarityBloomFilter(int hashCount, IBitSet bitset)
     {
         super(bitset);
         this.hashCount = hashCount;
         this.bitset = bitset;
+        this.paramA = generateParamA();
+        this.paramB = generateParamB();
     }
 
     SimilarityBloomFilter(SimilarityBloomFilter copy)
@@ -38,13 +46,42 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
         super(copy);
         hashCount = copy.hashCount;
         bitset = copy.bitset;
+        paramA = copy.paramA;
+        paramB = copy.paramB;
     }
 
-    public static final BloomFilterSerializer serializer = new BloomFilterSerializer();
+    private double[][] generateParamA()
+    {
+        double[][] a = new double[hashCount][dimention];
+
+        for (int l = 0; l < hashCount; l++)
+        {
+            for (int k = 0; k < dimention; k++)
+            {
+                a[l][k] = SimilarityHashUtil.genGaussianRandom();
+            }
+        }
+
+        return a;
+    }
+
+    private double[] generateParamB()
+    {
+        double[] b = new double[hashCount];
+
+        for (int l = 0; l < hashCount; l++)
+        {
+            b[l] = SimilarityHashUtil.genUniformRandom(0, W);
+        }
+
+        return b;
+    }
+
+    public static final SimilarityBloomFilterSerializer serializer = new SimilarityBloomFilterSerializer();
 
     public long serializedSize()
     {
-        return 0;
+        return serializer.serializedSize(this, TypeSizes.NATIVE);
     }
 
     public void add(FilterKey key)
@@ -59,7 +96,7 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
 
     public void clear()
     {
-
+        bitset.clear();
     }
 
     public IFilter sharedCopy()
@@ -67,8 +104,9 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
         return new SimilarityBloomFilter(this);
     }
 
+    @Override
     public long offHeapSize()
     {
-        return 0;
+        return bitset.offHeapSize();
     }
 }
