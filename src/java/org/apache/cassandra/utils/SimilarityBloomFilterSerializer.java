@@ -24,39 +24,26 @@ import java.io.IOException;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.io.ISerializer;
 import org.apache.cassandra.io.util.DataOutputPlus;
-import org.apache.cassandra.utils.obs.IBitSet;
-import org.apache.cassandra.utils.obs.OffHeapBitSet;
-import org.apache.cassandra.utils.obs.OpenBitSet;
 
 public class SimilarityBloomFilterSerializer implements ISerializer<SimilarityBloomFilter>
 {
-    public void serialize(SimilarityBloomFilter sbf, DataOutputPlus out) throws IOException
+    public void serialize(SimilarityBloomFilter similarityBloomFilter, DataOutputPlus out) throws IOException
     {
-        out.writeInt(sbf.hashCount);
-        sbf.bitset.serialize(out);
+
     }
 
     public SimilarityBloomFilter deserialize(DataInput in) throws IOException
     {
-        return deserialize(in, false);
+        return null;
     }
 
     public SimilarityBloomFilter deserialize(DataInput in, boolean offheap) throws IOException
     {
-        int hashes = in.readInt();
-        IBitSet bs = offheap ? OffHeapBitSet.deserialize(in) : OpenBitSet.deserialize(in);
-        return createFilter(hashes, bs);
+        return null;
     }
 
-    SimilarityBloomFilter createFilter(int hashes, IBitSet bs)
+    public long serializedSize(SimilarityBloomFilter similarityBloomFilter, TypeSizes type)
     {
-        return new SimilarityBloomFilter(hashes, bs);
-    }
-
-    public long serializedSize(SimilarityBloomFilter sbf, TypeSizes typeSizes)
-    {
-        int size = typeSizes.sizeof(sbf.hashCount); // hash count
-        size += sbf.bitset.serializedSize(typeSizes);
-        return size;
+        return 0;
     }
 }

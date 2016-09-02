@@ -20,6 +20,7 @@ package org.apache.cassandra.utils;
 import java.io.DataInput;
 import java.io.IOException;
 
+import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.utils.obs.IBitSet;
 import org.apache.cassandra.utils.obs.OffHeapBitSet;
@@ -37,11 +38,22 @@ public class FilterFactory
 
     public static void serialize(IFilter bf, DataOutputPlus output) throws IOException
     {
-        BloomFilter.serializer.serialize((BloomFilter) bf, output);
+        if (isSimilarityPartitioner())
+        {
+            SimilarityBloomFilter.serializer.serialize((SimilarityBloomFilter) bf, output);
+        }
+        else
+        {
+            BloomFilter.serializer.serialize((BloomFilter) bf, output);
+        }
     }
 
     public static IFilter deserialize(DataInput input, boolean offheap) throws IOException
     {
+        if (isSimilarityPartitioner())
+        {
+            return SimilarityBloomFilter.serializer.deserialize(input, offheap);
+        }
         return BloomFilter.serializer.deserialize(input, offheap);
     }
 
@@ -83,6 +95,15 @@ public class FilterFactory
     {
         long numBits = (numElements * bucketsPer) + BITSET_EXCESS;
         IBitSet bitset = offheap ? new OffHeapBitSet(numBits) : new OpenBitSet(numBits);
+        if (isSimilarityPartitioner())
+        {
+            return new SimilarityBloomFilter(hash, bitset);
+        }
         return new BloomFilter(hash, bitset);
+    }
+
+    private static boolean isSimilarityPartitioner()
+    {
+        return "org.apache.cassandra.dht.SimilarityPartitioner".equals(DatabaseDescriptor.getPartitionerName());
     }
 }
