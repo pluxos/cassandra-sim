@@ -15,29 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.cassandra.utils;
 
+import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.utils.concurrent.WrappedSharedCloseable;
 import org.apache.cassandra.utils.obs.IBitSet;
 
 public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFilter
 {
+    public final IBitSet bitset;
+    public final int hashCount;
+
     SimilarityBloomFilter(int hashCount, IBitSet bitset)
     {
         super(bitset);
-//        this.hashCount = hashCount;
-//        this.bitset = bitset;
+        this.hashCount = hashCount;
+        this.bitset = bitset;
     }
 
-    SimilarityBloomFilter(BloomFilter copy)
+    SimilarityBloomFilter(SimilarityBloomFilter copy)
     {
         super(copy);
-//        this.hashCount = copy.hashCount;
-//        this.bitset = copy.bitset;
+        this.hashCount = copy.hashCount;
+        this.bitset = copy.bitset;
     }
 
     public static final SimilarityBloomFilterSerializer serializer = new SimilarityBloomFilterSerializer();
+
+    public long serializedSize()
+    {
+        return serializer.serializedSize(this, TypeSizes.NATIVE);
+    }
 
     public void add(FilterKey key)
     {
@@ -51,21 +59,17 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
 
     public void clear()
     {
-
-    }
-
-    public long serializedSize()
-    {
-        return 0;
+        bitset.clear();
     }
 
     public IFilter sharedCopy()
     {
-        return null;
+        return new SimilarityBloomFilter(this);
     }
 
+    @Override
     public long offHeapSize()
     {
-        return 0;
+        return bitset.offHeapSize();
     }
 }
