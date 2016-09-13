@@ -31,3 +31,14 @@ vectors - os vetores aleatórios
 
 ## DatabaseDescriptor
 Adicionado os métodos get das propriedades do rhh
+
+## SimilarityBloomFilter
+Implementa a interface IFilter, que representa os BloomFilters usados na busca dos dados.
+
+### SimilarityHashUtil
+
+### SimilarityBloomFilterSerializer
+
+### LocalitySensitiveBitSet
+
+#### FilterFactory
