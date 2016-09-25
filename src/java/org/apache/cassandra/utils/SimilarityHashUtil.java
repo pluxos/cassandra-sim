@@ -19,4 +19,39 @@ package org.apache.cassandra.utils;
 
 public class SimilarityHashUtil
 {
+    public static final long[] RANDOM_INTS = {
+        (451072346 & 0xffffffff), (211732722 & 0xffffffff), (420423195 & 0xffffffff)
+    };
+
+    public static final int dimention = 6;    // dimension
+
+    public static final float[][] RANDOM_UNIFORM = {
+        {3.6f, 3.9f, 3.0f},
+        {3.4f, 2.5f, 3.6f},
+        {2.3f, 0.9f, 1.8f},
+        {2.3f, 0.9f, 1.8f}
+    };
+
+    public static final float[][][] RANDOM_GAUSSIAN = {
+        {
+            {0.5f, -0.9f, -0.1f, -1.0f, -0.6f, 1.1f},
+            {-0.2f, 0.5f, 0.9f, 1.0f, 0.3f, 0.9f},
+            {2.1f, -1.7f, -0.4f, -1.0f, -1.1f, -0.6f}
+        },
+        {
+            {-0.7f, -0.5f, -0.9f, 0.5f, 0.3f, -0.3f},
+            {0.7f, 0.6f, 1.3f, -2.6f, 0.1f, 0.1f},
+            {-0.5f, -0.7f, -0.7f, -0.8f, -2.3f, 0.3f}
+        },
+        {
+            {-0.1f, -0.4f, -0.5f, -1.7f, 0.2f, 0.1f},
+            {-0.2f, 0.8f, -0.5f, -0.5f, -0.3f, -0.2f},
+            {-0.4f, 1.6f, 0.2f, -0.3f, -0.9f, 0.3f}
+        },
+        {
+            {-1.4f, 0.6f, -1.5f, 0.6f, 0.3f, -2.0f},
+            {0.7f, -0.1f, -0.1f, -0.3f, -1.4f, 0.9f},
+            {0.5f, 0.3f, 0.6f, 0.3f, 0.5f, 0.4f}
+        }
+    };
 }

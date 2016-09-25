@@ -30,11 +30,11 @@ public class LocalitySensitiveBitSet implements IBitSet
     private static final int K_hfun = 3;    // the number of h_function(parameter K in lsh)
     private static final int CHAR_BIT = 8;  // 4294967291 = 2^32-5
 
-    int bitsSize;           // the size of bits
-    short bits[];
-    int nFuncs;             // there are nFuncs function in a bloom(= K)
-    float lshParamA[][];    // parameter a for lsh
-    float lshParamB[];      // parameter b for lsh
+    private int bitsSize;           // the size of bits
+    private short bits[];
+    private int nFuncs;             // there are nFuncs function in a bloom(= K)
+    private float lshParamA[][];    // parameter a for lsh
+    private float lshParamB[];      // parameter b for lsh
 
     public LocalitySensitiveBitSet(long numBits, float[][] lshParamA, float[] lshParamB)
     {
@@ -197,5 +197,25 @@ public class LocalitySensitiveBitSet implements IBitSet
         result = 31 * result + Arrays.deepHashCode(lshParamA);
         result = 31 * result + Arrays.hashCode(lshParamB);
         return result;
+    }
+
+    public int getBitsSize()
+    {
+        return bitsSize;
+    }
+
+    public int getnFuncs()
+    {
+        return nFuncs;
+    }
+
+    public float[][] getLshParamA()
+    {
+        return lshParamA;
+    }
+
+    public float[] getLshParamB()
+    {
+        return lshParamB;
     }
 }
