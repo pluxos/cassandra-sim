@@ -29,7 +29,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class RandomHyperplaneHashTest
 {
-    private static final double[] object = {10.0, 5.0, 6.0, 1.0, 0.0, 2.0};
+    private static final int[] object = { 18, 230, 35, 674, 99, 64 };
 
     private static ByteBuffer key;
     private static BitSet hash;
@@ -37,20 +37,32 @@ public class RandomHyperplaneHashTest
     @BeforeClass
     public static void init()
     {
-        key = ByteBuffer.allocate(8 * object.length);
+        ByteBuffer[] values = new ByteBuffer[object.length];
         for (int i = 0; i < object.length; i++) {
-            key.putDouble(object[i]);
+            values[i] = ByteBuffer.allocate(4);
+            values[i].putInt(object[i]);
+            values[i].flip();
         }
+
+        key = ByteBuffer.allocate(42);
+        for (int i = 0; i < object.length; i++)
+        {
+            ByteBuffer bb = values[i];
+            ByteBufferUtil.writeShortLength(key, bb.remaining());
+            key.put(bb.duplicate());
+            key.put((byte)0);
+        }
+        key.flip();
 
         hash = new BitSet(8);
         hash.set(7, true);
         hash.set(6, false);
         hash.set(5, true);
         hash.set(4, false);
-        hash.set(3, true);
-        hash.set(2, true);
-        hash.set(1, true);
-        hash.set(0, false);
+        hash.set(3, false);
+        hash.set(2, false);
+        hash.set(1, false);
+        hash.set(0, true);
     }
 
     @Test

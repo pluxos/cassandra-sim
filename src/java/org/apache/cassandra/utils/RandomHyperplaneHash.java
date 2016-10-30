@@ -19,7 +19,6 @@
 package org.apache.cassandra.utils;
 
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
 import java.util.BitSet;
 import java.util.Random;
 
@@ -34,9 +33,7 @@ public class RandomHyperplaneHash
 
     private static BitSet rhh(ByteBuffer key, int bits, double[][] vectors)
     {
-        int dimension = key.capacity() / 8;
-
-        double[] vectorKey = getVectorKey(key, dimension);
+        double[] vectorKey = getVectorKey(key);
 
         BitSet hash = new BitSet(bits);
 
@@ -79,26 +76,83 @@ public class RandomHyperplaneHash
         return rhh(key, bits, vectors);
     }
 
-    private static double[] getVectorKey(ByteBuffer key, int dimension)
+    private static double[] getVectorKey(ByteBuffer key)
     {
-        DoubleBuffer buffer = ((ByteBuffer) key.rewind()).asDoubleBuffer();
-        double[] vector = new double[dimension];
-
-        int i = 0;
-        while (buffer.hasRemaining())
+        double[] vector;
+        if (key.remaining() < 2)
         {
-            vector[i] = buffer.get();
+            vector = getVectorKeyByteByByte(key);
+        }
+        else
+        {
+            int length = ByteBufferUtil.readShortLength(key);
+            if (length > key.remaining())
+            {
+                key.rewind();
+                vector = getVectorKeyByteByByte(key);
+            }
+            else
+            {
+                key.rewind();
+                int dataSize = 0;
+                int dimension = getKeyDimension(key, dataSize);
+                vector = new double[dimension];
+                for (int i = 0; i < dimension; i++)
+                {
+                    length = ByteBufferUtil.readShortLength(key);
+                    double value = 0;
+                    if (length == 4)
+                        value = key.getInt();
+                    else if (length == 8)
+                        value = key.getDouble();
+                    else
+                        value = key.get();
+                    key.get();
+                    vector[i] = value;
+                }
+            }
+        }
+        key.rewind();
+        return vector;
+    }
+
+    private static double[] getVectorKeyByteByByte(ByteBuffer key)
+    {
+        double[] vector = new double[key.remaining()];
+        int i = 0;
+        while (key.hasRemaining())
+        {
+            vector[i] = key.get();
             i++;
         }
-
         return vector;
+    }
+
+    private static int getKeyDimension(ByteBuffer key, int dataSize)
+    {
+        int dimension = 0;
+
+        int pos = 0;
+        while (key.hasRemaining())
+        {
+            int length = ByteBufferUtil.readShortLength(key);
+            dataSize += length;
+            pos += 3 + length;
+            key.position(pos);
+            dimension++;
+        }
+
+        key.rewind();
+
+        return dimension;
     }
 
     private static double scalarProduct(double[] v1, double[] v2)
     {
         double scalarProduct = 0;
+        int length = Math.min(v1.length, v2.length);
 
-        for (int i = 0; i < v1.length; i++)
+        for (int i = 0; i < length; i++)
         {
             scalarProduct = scalarProduct + (v1[i] * v2[i]);
         }
