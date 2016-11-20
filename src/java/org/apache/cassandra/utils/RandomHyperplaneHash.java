@@ -67,11 +67,21 @@ public class RandomHyperplaneHash
 
     private static BitSet rhh(int bits, double[][] vectors)
     {
+        int dataSize = 8;
+        int size = vectors[0].length;
+
         Random seed = new Random();
-        // TODO get size of byte array dynamically, size 6
-        byte[] bytes = new byte[6 * 8];
-        seed.nextBytes(bytes);
-        ByteBuffer key = ByteBuffer.wrap(bytes);
+        ByteBuffer key = ByteBuffer.allocate((dataSize * size) + (3 * size));
+        for (int i = 0; i < size; i++)
+        {
+            byte[] bytes = new byte[dataSize];
+            seed.nextBytes(bytes);
+            ByteBufferUtil.writeShortLength(key, dataSize);
+            key.put(ByteBuffer.wrap(bytes));
+            key.put((byte) 0);
+        }
+
+        key.rewind();
 
         return rhh(key, bits, vectors);
     }
@@ -85,22 +95,16 @@ public class RandomHyperplaneHash
         }
         else
         {
-            int length = ByteBufferUtil.readShortLength(key);
-            if (length > key.remaining())
+            try
             {
-                key.rewind();
-                vector = getVectorKeyByteByByte(key);
-            }
-            else
-            {
-                key.rewind();
+                int length;
                 int dataSize = 0;
                 int dimension = getKeyDimension(key, dataSize);
                 vector = new double[dimension];
                 for (int i = 0; i < dimension; i++)
                 {
                     length = ByteBufferUtil.readShortLength(key);
-                    double value = 0;
+                    double value;
                     if (length == 4)
                         value = key.getInt();
                     else if (length == 8)
@@ -110,6 +114,9 @@ public class RandomHyperplaneHash
                     key.get();
                     vector[i] = value;
                 }
+            } catch (Exception e) {
+                key.rewind();
+                vector = getVectorKeyByteByByte(key);
             }
         }
         key.rewind();
@@ -159,21 +166,4 @@ public class RandomHyperplaneHash
 
         return scalarProduct;
     }
-
-    /*private static double[][] getVectors(int bits, int dimension)
-    {
-        double[][] vectors = new double[bits][dimension];
-
-        Random seed = new Random();
-
-        for (int i = 0; i < bits; i++)
-        {
-            for (int j = 0; j < dimension; j++)
-            {
-                vectors[i][j] = seed.nextGaussian();
-            }
-        }
-
-        return vectors;
-    }*/
 }
