@@ -50,11 +50,7 @@ public class FilterFactory
 
     public static IFilter deserialize(DataInput input, boolean offheap) throws IOException
     {
-        if (isSimilarityPartitioner())
-        {
-            return SimilarityBloomFilter.serializer.deserialize(input, offheap);
-        }
-        return BloomFilter.serializer.deserialize(input, offheap);
+        return isSimilarityPartitioner() ? SimilarityBloomFilter.serializer.deserialize(input, offheap) : BloomFilter.serializer.deserialize(input, offheap);
     }
 
     /**
@@ -95,11 +91,7 @@ public class FilterFactory
     {
         long numBits = (numElements * bucketsPer) + BITSET_EXCESS;
         IBitSet bitset = offheap ? new OffHeapBitSet(numBits) : new OpenBitSet(numBits);
-        if (isSimilarityPartitioner())
-        {
-            return new SimilarityBloomFilter(hash, bitset);
-        }
-        return new BloomFilter(hash, bitset);
+        return isSimilarityPartitioner() ? new SimilarityBloomFilter(hash, bitset) : new BloomFilter(hash, bitset);
     }
 
     private static boolean isSimilarityPartitioner()
