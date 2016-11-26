@@ -25,8 +25,6 @@ import org.apache.cassandra.io.ISerializer;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.utils.obs.IBitSet;
 import org.apache.cassandra.utils.obs.LocalitySensitiveBitSet;
-import org.apache.cassandra.utils.obs.OffHeapBitSet;
-import org.apache.cassandra.utils.obs.OpenBitSet;
 
 public class SimilarityBloomFilterSerializer implements ISerializer<SimilarityBloomFilter>
 {
@@ -38,14 +36,7 @@ public class SimilarityBloomFilterSerializer implements ISerializer<SimilarityBl
 
     public SimilarityBloomFilter deserialize(DataInput in) throws IOException
     {
-        return deserialize(in, false);
-    }
-
-    @SuppressWarnings("resource")
-    public SimilarityBloomFilter deserialize(DataInput in, boolean offheap) throws IOException
-    {
         int hashes = in.readInt();
-        /*IBitSet bs = offheap ? OffHeapBitSet.deserialize(in) : OpenBitSet.deserialize(in);*/
         IBitSet bs = LocalitySensitiveBitSet.deserialize(in);
         return createFilter(hashes, bs);
     }

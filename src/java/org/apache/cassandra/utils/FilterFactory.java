@@ -50,7 +50,7 @@ public class FilterFactory
 
     public static IFilter deserialize(DataInput input, boolean offheap) throws IOException
     {
-        return isSimilarityPartitioner() ? SimilarityBloomFilter.serializer.deserialize(input, offheap) : BloomFilter.serializer.deserialize(input, offheap);
+        return isSimilarityPartitioner() ? SimilarityBloomFilter.serializer.deserialize(input) : BloomFilter.serializer.deserialize(input, offheap);
     }
 
     /**
