@@ -39,7 +39,7 @@ public class LocalitySensitiveBitSet implements IBitSet
     public LocalitySensitiveBitSet(long numBits, float[][] lshParamA, float[] lshParamB)
     {
         this.bitsSize = (int) numBits;
-        this.bits = new short[(bitsSize + CHAR_BIT - 1) / CHAR_BIT];
+        this.bits = new short[intCapacity()];
         this.nFuncs = K_hfun;
         this.lshParamA = lshParamA;
         this.lshParamB = lshParamB;
@@ -51,6 +51,11 @@ public class LocalitySensitiveBitSet implements IBitSet
     }
 
     public long capacity()
+    {
+        return intCapacity();
+    }
+
+    private int intCapacity()
     {
         return (bitsSize + CHAR_BIT - 1) / CHAR_BIT;
     }
@@ -104,8 +109,8 @@ public class LocalitySensitiveBitSet implements IBitSet
         }
 
         // serialize bits
-        out.writeInt(bitsSize);
-        for (int i = 0; i < bitsSize; i++)
+        out.writeInt(intCapacity());
+        for (int i = 0; i < intCapacity(); i++)
         {
             out.writeShort(bits[i]);
         }
@@ -121,7 +126,7 @@ public class LocalitySensitiveBitSet implements IBitSet
         {
             size += type.sizeof(lshParamA[i].length) + (lshParamA[i].length * Float.SIZE);
         }
-        size += type.sizeof(bitsSize) + (bitsSize * Short.SIZE);
+        size += type.sizeof(intCapacity()) + (intCapacity() * Short.SIZE);
 
         return size;
     }
@@ -162,7 +167,7 @@ public class LocalitySensitiveBitSet implements IBitSet
 
     public void clear()
     {
-        for (long i = 0; i < bitsSize; i++)
+        for (long i = 0; i < intCapacity(); i++)
         {
             clear(i);
         }

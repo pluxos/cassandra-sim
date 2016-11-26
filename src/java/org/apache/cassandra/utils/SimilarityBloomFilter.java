@@ -33,27 +33,24 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
     private static final int W = 4;        // The default value for lsh algorithm parameter W
 
     private static final long UH_PRIME_DEFAULT = 4294967291L & 0xffffffff;   // 2^29
-//    private static final long MAX_HASH_RND = 536870912L & 0xffffffff;     // lsh_r(1,MAX_HASH_RND)
+    // private static final long MAX_HASH_RND = 536870912L & 0xffffffff;     // lsh_r(1,MAX_HASH_RND)
 
     private long lsh_r[];    //used to calculate the gindex of lsh, gindex=((lsh_r*a)mod prime)mod tableSize
-    private LocalitySensitiveBitSet lsbs[];
-
-    public final IBitSet bitset;
+    public final IBitSet bitset[];
     public final int hashCount;
 
-    SimilarityBloomFilter(int hashCount, IBitSet bitset)
+    public static int getBitSetNum()
+    {
+        return BLOOM_L;
+    }
+
+    SimilarityBloomFilter(int hashCount, IBitSet[] bitset)
     {
         super(bitset);
         this.hashCount = hashCount;
         this.bitset = bitset;
 
         this.lsh_r = SimilarityHashUtil.RANDOM_INTS;
-        this.lsbs = new LocalitySensitiveBitSet[BLOOM_L];
-        for (int i = 0; i < BLOOM_L; i++)
-        {
-            lsbs[i] = new LocalitySensitiveBitSet(SimilarityHashUtil.RANDOM_GAUSSIAN[i],
-                                                  SimilarityHashUtil.RANDOM_UNIFORM[i]);
-        }
     }
 
     SimilarityBloomFilter(SimilarityBloomFilter copy)
@@ -63,7 +60,6 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
         this.bitset = copy.bitset;
 
         this.lsh_r = copy.lsh_r;
-        this.lsbs = copy.lsbs;
     }
 
     public static final SimilarityBloomFilterSerializer serializer = new SimilarityBloomFilterSerializer();
@@ -79,9 +75,9 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
         long index, temp[];
         for (int i = 0; i < BLOOM_L; i++)
         {
-            temp = getVector(lsbs[i], data, R);
-            index = getIndex(lsbs[i], temp);
-            lsbs[i].set(index);
+            temp = getVector((LocalitySensitiveBitSet) bitset[i], data, R);
+            index = getIndex((LocalitySensitiveBitSet) bitset[i], temp);
+            bitset[i].set(index);
         }
     }
 
@@ -151,32 +147,34 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
 
         for (int i = 0; i < BLOOM_L; i++)
         {
-            temp = getVector(lsbs[i], data, R);
-            index = getIndex(lsbs[i], temp);
+            LocalitySensitiveBitSet bitset = (LocalitySensitiveBitSet) this.bitset[i];
 
-            if (lsbs[i].get(index))
+            temp = getVector(bitset, data, R);
+            index = getIndex(bitset, temp);
+
+            if (bitset.get(index))
             {
                 continue;
             }
             else
             {
-                for (j = 0; j < lsbs[i].getnFuncs(); j++)
+                for (j = 0; j < bitset.getnFuncs(); j++)
                 {
                     temp[j] -= 1;
-                    index = getIndex(lsbs[i], temp);
-                    if (lsbs[i].get(index))
+                    index = getIndex(bitset, temp);
+                    if (bitset.get(index))
                     {
                         break;
                     }
                     temp[j] += 2;
-                    index = getIndex(lsbs[i], temp);
-                    if (lsbs[i].get(index))
+                    index = getIndex(bitset, temp);
+                    if (bitset.get(index))
                     {
                         break;
                     }
                     temp[j] -= 1;
                 }
-                if (j == lsbs[i].getnFuncs())
+                if (j == bitset.getnFuncs())
                 {
                     return false;
                 }
@@ -188,7 +186,10 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
 
     public void clear()
     {
-        bitset.clear();
+        for (IBitSet bs : bitset)
+        {
+            bs.clear();
+        }
     }
 
     public IFilter sharedCopy()
@@ -199,6 +200,11 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
     @Override
     public long offHeapSize()
     {
-        return bitset.offHeapSize();
+        long offHeapSize = 0L;
+        for (IBitSet bs : bitset)
+        {
+            offHeapSize += bs.offHeapSize();
+        }
+        return offHeapSize;
     }
 }

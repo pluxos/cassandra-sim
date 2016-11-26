@@ -31,17 +31,26 @@ public class SimilarityBloomFilterSerializer implements ISerializer<SimilarityBl
     public void serialize(SimilarityBloomFilter bf, DataOutputPlus out) throws IOException
     {
         out.writeInt(bf.hashCount);
-        bf.bitset.serialize(out);
+        out.writeInt(bf.bitset.length);
+        for (IBitSet bs : bf.bitset)
+        {
+            bs.serialize(out);
+        }
     }
 
     public SimilarityBloomFilter deserialize(DataInput in) throws IOException
     {
         int hashes = in.readInt();
-        IBitSet bs = LocalitySensitiveBitSet.deserialize(in);
+        int length = in.readInt();
+        IBitSet[] bs = new IBitSet[length];
+        for (int i = 0; i < length; i++)
+        {
+            bs[i] = LocalitySensitiveBitSet.deserialize(in);
+        }
         return createFilter(hashes, bs);
     }
 
-    SimilarityBloomFilter createFilter(int hashes, IBitSet bs)
+    SimilarityBloomFilter createFilter(int hashes, IBitSet[] bs)
     {
         return new SimilarityBloomFilter(hashes, bs);
     }
@@ -49,7 +58,11 @@ public class SimilarityBloomFilterSerializer implements ISerializer<SimilarityBl
     public long serializedSize(SimilarityBloomFilter bf, TypeSizes typeSizes)
     {
         int size = typeSizes.sizeof(bf.hashCount); // hash count
-        size += bf.bitset.serializedSize(typeSizes);
+        size += typeSizes.sizeof(bf.bitset.length);
+        for (IBitSet bs : bf.bitset)
+        {
+            size += bs.serializedSize(typeSizes);
+        }
         return size;
     }
 }

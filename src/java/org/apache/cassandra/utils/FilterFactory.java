@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.cassandra.config.DatabaseDescriptor;
 import org.apache.cassandra.io.util.DataOutputPlus;
 import org.apache.cassandra.utils.obs.IBitSet;
+import org.apache.cassandra.utils.obs.LocalitySensitiveBitSet;
 import org.apache.cassandra.utils.obs.OffHeapBitSet;
 import org.apache.cassandra.utils.obs.OpenBitSet;
 
@@ -90,8 +91,19 @@ public class FilterFactory
     private static IFilter createFilter(int hash, long numElements, int bucketsPer, boolean offheap)
     {
         long numBits = (numElements * bucketsPer) + BITSET_EXCESS;
+
+        if (isSimilarityPartitioner())
+        {
+            IBitSet[] bitSet = new IBitSet[SimilarityBloomFilter.getBitSetNum()];
+            for (int i = 0; i < bitSet.length; i++) {
+                bitSet[i] = new LocalitySensitiveBitSet(SimilarityHashUtil.RANDOM_GAUSSIAN[i], SimilarityHashUtil.RANDOM_UNIFORM[i]);
+                // bitSet[i] = new LocalitySensitiveBitSet(numBits, SimilarityHashUtil.RANDOM_GAUSSIAN[i], SimilarityHashUtil.RANDOM_UNIFORM[i]);
+            }
+            return new SimilarityBloomFilter(hash, bitSet);
+        }
+
         IBitSet bitset = offheap ? new OffHeapBitSet(numBits) : new OpenBitSet(numBits);
-        return isSimilarityPartitioner() ? new SimilarityBloomFilter(hash, bitset) : new BloomFilter(hash, bitset);
+        return new BloomFilter(hash, bitset);
     }
 
     private static boolean isSimilarityPartitioner()
