@@ -17,9 +17,10 @@
  */
 package org.apache.cassandra.utils;
 
-import java.nio.FloatBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.apache.cassandra.db.BufferDecoratedKey;
+import org.apache.cassandra.db.DecoratedKey;
 import org.apache.cassandra.db.TypeSizes;
 import org.apache.cassandra.utils.concurrent.WrappedSharedCloseable;
 import org.apache.cassandra.utils.obs.IBitSet;
@@ -27,6 +28,8 @@ import org.apache.cassandra.utils.obs.LocalitySensitiveBitSet;
 
 public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFilter
 {
+    private static final Logger logger = LoggerFactory.getLogger(SimilarityBloomFilter.class);
+
     public static final float R = 2F;
 
     private static final int BLOOM_L = 4;    // the number of bloom(parameter L in lsh)
@@ -83,14 +86,13 @@ public class SimilarityBloomFilter extends WrappedSharedCloseable implements IFi
 
     private float[] getData(FilterKey key)
     {
-        FloatBuffer floatBuffer = ((BufferDecoratedKey) key).getKey().asFloatBuffer();
-        float data[] = new float[SimilarityHashUtil.dimention];
+        String token = ((DecoratedKey) key).getToken().toString();
+        float[] data = new float[SimilarityHashUtil.dimention];
 
-        int k = 0;
-        while (floatBuffer.hasRemaining())
-        {
-            data[k] = floatBuffer.get();
-            k++;
+        int i = 0;
+        for (char bit : token.toCharArray()) {
+            data[i] = (bit == '1') ? 1 : 0;
+            i++;
         }
 
         return data;

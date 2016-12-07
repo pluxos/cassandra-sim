@@ -17,13 +17,16 @@
  */
 package org.apache.cassandra.utils;
 
+import org.apache.cassandra.config.DatabaseDescriptor;
+
 public class SimilarityHashUtil
 {
     public static final long[] RANDOM_INTS = {
         (451072346 & 0xffffffff), (211732722 & 0xffffffff), (420423195 & 0xffffffff)
     };
 
-    public static final int dimention = 6;    // dimension
+    // public static final int dimention = 6;    // dimension
+    public static final int dimention = DatabaseDescriptor.getIdentifierLength();    // dimension
 
     public static final float[][] RANDOM_UNIFORM = {
         {3.6f, 3.9f, 3.0f},
@@ -33,6 +36,29 @@ public class SimilarityHashUtil
     };
 
     public static final float[][][] RANDOM_GAUSSIAN = {
+        {
+            {-0.5f, 0.2f, 0.1f, 0.2f, -1.5f, -0.8f, -1.4f, 0.3f, -0.2f, -1.5f, 0.1f, 0.7f, -1.6f, 1.6f, 0.0f, 0.6f, -0.3f, -0.9f, 1.2f, 0.2f, 0.1f, 1.1f, -1.0f, 0.6f, 2.2f, 1.0f, -0.9f, -0.3f, 2.3f, 1.2f, 1.7f, 0.3f},
+            {-1.6f, 0.1f, -0.6f, 1.1f, 1.2f, -0.1f, -0.1f, -0.6f, 0.4f, 0.9f, -0.3f, 1.3f, -0.6f, -0.3f, 0.6f, 1.1f, 0.5f, 0.7f, 0.3f, 0.3f, 1.4f, -0.9f, -0.2f, -0.2f, 0.2f, -0.3f, -0.9f, 1.6f, 1.5f, 0.1f, 0.2f, -0.6f},
+            {-0.5f, 0.2f, 0.0f, -0.2f, 0.5f, -0.1f, 2.2f, -2.4f, 0.1f, -0.1f, 0.9f, 0.1f, 1.4f, 1.0f, 0.6f, 0.5f, 0.0f, 1.3f, 0.0f, 0.3f, 0.1f, 0.5f, 2.9f, 0.4f, -1.5f, 0.2f, -1.4f, -1.0f, 0.7f, 0.1f, 1.5f, 0.8f}
+        },
+        {
+            {-0.5f, -0.0f, 0.5f, 0.3f, -0.0f, 0.4f, -0.9f, 0.9f, 0.4f, 0.0f, 0.1f, -0.3f, 0.2f, -1.5f, -1.0f, 1.1f, -1.5f, 0.6f, -1.0f, -0.3f, 0.9f, 1.3f, -1.2f, 0.1f, -0.9f, -0.4f, 0.3f, 0.9f, -0.4f, -0.6f, 0.6f, -0.7f},
+            {-0.4f, 0.2f, -0.2f, -0.0f, 1.0f, 1.2f, 0.7f, -1.4f, -0.9f, -0.2f, -0.2f, 0.6f, 0.2f, -0.3f, -1.7f, 0.3f, -0.2f, -0.8f, 0.2f, 0.3f, 0.2f, -0.6f, 1.3f, 0.3f, -1.0f, -0.3f, -0.5f, 0.7f, -0.3f, -0.7f, 0.5f, -1.0f},
+            {-0.1f, 0.3f, 0.9f, -1.3f, 1.4f, -0.3f, 0.2f, -0.6f, -0.7f, -0.1f, 1.7f, -1.3f, -0.3f, 1.2f, 1.2f, -0.1f, 0.1f, 0.7f, -0.4f, 0.3f, -1.0f, -0.5f, -0.8f, -0.5f, -0.1f, 0.3f, 1.3f, 0.1f, 1.2f, -0.1f, -2.3f, -0.0f}
+        },
+        {
+            {-1.7f, 0.4f, -1.6f, -0.9f, 0.4f, 2.3f, 0.2f, -0.8f, -1.7f, -1.0f, -0.7f, 1.2f, 0.6f, -1.0f, -0.8f, 0.8f, 1.9f, 0.2f, 0.2f, -0.2f, 1.0f, 0.6f, 0.9f, 0.3f, 0.5f, 0.3f, -1.4f, -1.0f, -0.1f, -1.5f, -1.4f, -1.3f},
+            {0.6f, 1.1f, -1.0f, -0.1f, -1.0f, 1.0f, 0.3f, -0.3f, 0.9f, 0.6f, -0.6f, -0.9f, -0.3f, -0.3f, 1.9f, -0.9f, -1.3f, -0.8f, 3.7f, -0.1f, 0.6f, -1.0f, 0.7f, -0.4f, 0.2f, -1.9f, -0.3f, 0.2f, -0.4f, -0.5f, 0.7f, 1.5f},
+            {1.0f, -1.1f, 0.1f, -0.5f, 0.9f, -0.2f, -0.4f, 0.1f, 0.2f, -1.3f, 0.6f, 0.4f, -0.3f, -1.0f, -0.6f, 0.7f, 1.0f, -0.8f, -0.6f, -2.1f, 1.1f, -0.5f, -0.9f, -1.7f, -1.4f, -0.6f, 0.4f, -1.0f, 1.2f, 2.1f, -0.8f, 0.3f}
+        },
+        {
+            {0.9f, -0.8f, 0.8f, 0.3f, 0.0f, -1.4f, -1.7f, -0.3f, 0.5f, -1.8f, 0.1f, -0.0f, 0.7f, -1.2f, -1.0f, 0.4f, -0.8f, 0.8f, -1.4f, 0.4f, 0.4f, -0.8f, -0.7f, -2.2f, 0.0f, -1.6f, 2.7f, 0.1f, 0.4f, -1.8f, 0.3f, 0.9f},
+            {-0.5f, -0.3f, -0.0f, -0.2f, 0.2f, -0.4f, 0.7f, -0.4f, 0.6f, 0.4f, 0.3f, 0.3f, 1.4f, -0.7f, 0.3f, 0.9f, -1.4f, -0.3f, 1.4f, 0.4f, -2.4f, 0.0f, 1.4f, -2.6f, -0.9f, -0.4f, -0.3f, 1.4f, 0.2f, -0.4f, -0.2f, -0.2f},
+            {0.2f, 1.0f, 1.2f, 1.1f, 1.0f, 0.5f, 2.1f, -0.1f, 0.5f, -1.0f, 0.6f, -1.0f, 0.1f, -1.1f, 1.1f, -0.2f, -1.8f, -0.5f, -0.5f, -0.2f, -0.4f, 0.1f, -0.7f, 1.6f, -0.5f, -0.7f, 0.7f, -0.1f, -2.3f, -0.4f, 0.5f, -0.0f}
+        }
+    };
+
+    /*public static final float[][][] RANDOM_GAUSSIAN = {
         {
             {0.5f, -0.9f, -0.1f, -1.0f, -0.6f, 1.1f},
             {-0.2f, 0.5f, 0.9f, 1.0f, 0.3f, 0.9f},
@@ -53,5 +79,5 @@ public class SimilarityHashUtil
             {0.7f, -0.1f, -0.1f, -0.3f, -1.4f, 0.9f},
             {0.5f, 0.3f, 0.6f, 0.3f, 0.5f, 0.4f}
         }
-    };
+    };*/
 }

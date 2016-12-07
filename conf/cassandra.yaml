@@ -23,7 +23,8 @@ cluster_name: 'Test Cluster'
 # If you already have a cluster with 1 token per node, and wish to migrate to 
 # multiple tokens per node, see http://wiki.apache.org/cassandra/Operations
 #num_tokens: 256
-num_tokens: 8
+#num_tokens: 8
+num_tokens: 1
 
 # initial_token allows you to specify tokens manually.  While you can use # it with
 # vnodes (num_tokens > 1, above) -- in which case you should provide a 
@@ -342,6 +343,7 @@ concurrent_counter_writes: 32
 # If omitted, Cassandra will set both to 1/4 the size of the heap.
 # memtable_heap_space_in_mb: 2048
 # memtable_offheap_space_in_mb: 2048
+memtable_heap_space_in_mb: 1
 
 # Ratio of occupied non-flushing memtable size to total permitted size
 # that will trigger a flush of the largest memtable.  Lager mct will
